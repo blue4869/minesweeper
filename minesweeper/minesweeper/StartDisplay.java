@@ -1,4 +1,4 @@
-package swing;
+package swing.minesweeper;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -10,52 +10,45 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+/**
+ * アプリケーション開始時の難易度設定画面を表示する
+ */
 public class StartDisplay extends JFrame implements ActionListener {
 
-	private JFrame frame;
-	private JPanel p;
+	/** ウインドウタイトル */
+	private static final String TITLE = "マインスイーパー";
 
-	public StartDisplay(JFrame frame, JPanel p) {
-
-		this.frame = frame;
-		this.p = p;
-
-	}
-
+	/**
+	 * 難易度選択画面を生成する。
+	 */
 	public void makeFrame() {
 
-		frame.dispose();
-
-		frame = new JFrame();
-		p = new JPanel();
-
-		frame.setTitle("マインスイーパー");
+		JFrame frame = new JFrame();
+		frame.setTitle(TITLE);
 		frame.setBounds(100, 100, 400, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JButton btn = new JButton("Game Start!!");
 
 		// 難易度を選択するラジオボタンを作成
-		JPanel radio = new JPanel();
+		JRadioButton easy = new JRadioButton("簡単", true);
+		easy.setName(ConstLevels.EASY.getLevel());
+		JRadioButton normal = new JRadioButton("普通");
+		normal.setName(ConstLevels.NORMAL.getLevel());
+		JRadioButton hard = new JRadioButton("困難");
+		hard.setName(ConstLevels.HARD.getLevel());
 
 		ButtonGroup levels = new ButtonGroup();
-
-		JRadioButton easy = new JRadioButton("簡単", true);
-		JRadioButton normal = new JRadioButton("普通");
-		JRadioButton hard = new JRadioButton("困難");
-
-		easy.setName("easy");
-		normal.setName("normal");
-		hard.setName("hard");
-
 		levels.add(easy);
 		levels.add(normal);
 		levels.add(hard);
 
+		JPanel radio = new JPanel();
 		radio.add(easy);
 		radio.add(normal);
 		radio.add(hard);
 
+		JPanel p = new JPanel();
 		p.add(btn);
 		frame.getContentPane().add(radio, BorderLayout.NORTH);
 		frame.getContentPane().add(p, BorderLayout.CENTER);
@@ -63,7 +56,6 @@ public class StartDisplay extends JFrame implements ActionListener {
 		btn.addActionListener(new NewGame(frame, p, radio));
 
 		frame.setVisible(true);
-
 	}
 
 	public void actionPerformed(ActionEvent e) {
