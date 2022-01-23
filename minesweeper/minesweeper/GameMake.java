@@ -11,11 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameMake extends JFrame implements ActionListener, MouseListener {
@@ -93,133 +95,94 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 	 */
 	public void actionPerformed (ActionEvent e) {
 
-		JButton b = (JButton)e.getSource();
-		JButton[] btn = embedMine();
-		btn = mineNumber(btn);
+		JButton selectedButton = (JButton)e.getSource();
+		String selectedButtonNumber = selectedButton.getActionCommand();
 
-		this.p.removeAll();
-		for(int i = 0; i < data[AREA]; i++) {
-			btn[i].setActionCommand(String.valueOf(i));
-			btn[i].addActionListener(new CheckMine(this.frame, this.p, data));
-			btn[i].addMouseListener(this);
-			this.p.add(btn[i]);
+		// 地雷位置生成
+		Random rand = new Random();
+		IntStream minePosStream = rand.ints(0, data[AREA]);
+		int[] minePosArray =  minePosStream
+				.filter(minePos -> !String.valueOf(minePos).equals(selectedButtonNumber))
+				.distinct().limit(data[I_MINE])
+				.sorted().toArray();
+
+		// 地雷をボタンに設定する。地雷がない場合は周囲の地雷数を設定する。
+		int minePos_j = 0;
+		aroundPosMap = new HashMap<>();
+		for (Component component : p.getComponents()) {
+			if (component instanceof JButton btn) {
+				int btn_i = Integer.parseInt(btn.getActionCommand());
+				if (minePos_j < data[I_MINE] && btn_i == minePosArray[minePos_j]) {
+					btn.setName(Constants.MINE);
+					minePos_j++;
+				} else {
+					btn.setName(String.valueOf(setAroundMineNumber(btn_i, minePosArray)));
+				}
+				btn.removeActionListener(this);
+				btn.addActionListener(new CheckMine(this.frame, this.p, data));
+				btn.addMouseListener(this);
+			}
 		}
 
-		JButton selectedBtn = btn[Integer.parseInt(b.getActionCommand())];
-		CheckMine.nameCheck(selectedBtn, p, data);
+		// クリックされたボタンを開ける
+		CheckMine.nameCheck(selectedButton, p, data);
 
-		this.frame.setContentPane(p);
 	}
 
 	/**
 	 * <p>周囲に埋められている地雷の数を設定する</p>
-	 * @param btn JButton
+	 * @param pos ボタン位置
 	 * @return JButton
 	 */
-	public JButton[] mineNumber(JButton[] btn) {
+	public int setAroundMineNumber(int pos, int[] minePosArray) {
 
-		aroundPosMap = new HashMap<>();
-		for (int i = 0; i < data[AREA]; i++) {
-			JButton targetBtn = btn[i];
-			if (Constants.MINE.equals(targetBtn.getName())) {
-				// 地雷ならば周囲の地雷数は不要
-				continue;
-			}
+		int upperLeft = pos - data[WIDTH] - 1;
+		int up = pos - data[WIDTH];
+		int upperRight = pos - data[WIDTH] + 1;
+		int left = pos - 1;
+		int right = pos + 1;
+		int lowerLeft = pos + data[WIDTH] - 1;
+		int bottom = pos + data[WIDTH];
+		int lowerRight = pos + data[WIDTH] + 1;
 
-			int upperLeft = i - data[WIDTH] - 1;
-			int up = i - data[WIDTH];
-			int upperRight = i - data[WIDTH] + 1;
-			int left = i - 1;
-			int right = i + 1;
-			int lowerLeft = i + data[WIDTH] - 1;
-			int bottom = i + data[WIDTH];
-			int lowerRight = i + data[WIDTH] + 1;
-
-			if (i == 0) {
-				// 左上角の場合
-				aroundPosMap.put(i, List.of(right, bottom, lowerRight));
-			} else if (i == data[WIDTH] - 1) {
-				// 右上角の場合
-				aroundPosMap.put(i, List.of(left, lowerLeft, bottom));
-			} else if (i == (data[HEIGHT] - 1) * data[WIDTH]) {
-				// 左下角の場合
-				aroundPosMap.put(i, List.of(up, upperRight, right));
-			} else if (i == data[AREA] - 1) {
-				// 右下角の場合
-				aroundPosMap.put(i, List.of(up, upperLeft, left));
-			} else if (i < data[WIDTH] - 1) {
-				// 上辺の場合
-				aroundPosMap.put(i, List.of(left, right, lowerLeft, bottom, lowerRight));
-			} else if (i % data[WIDTH] == 0) {
-				// 左辺の場合
-				aroundPosMap.put(i, List.of(up, upperRight, right, bottom, lowerRight));
-			} else if ( (i % data[WIDTH]) == (data[WIDTH] - 1)) {
-				// 右辺の場合
-				aroundPosMap.put(i, List.of(up, upperLeft, left, bottom, lowerLeft));
-			} else if ((i > (data[HEIGHT] - 1) * data[WIDTH]) && (i < data[AREA] - 1)) {
-				// 下辺の場合
-				aroundPosMap.put(i, List.of(up, upperLeft, left, right, upperRight));
-			} else {
-				// 真ん中の場合
-				aroundPosMap.put(i, List.of(upperLeft, up, upperRight, left, right, lowerLeft, bottom, lowerRight));
-			}
-			targetBtn.setName(String.valueOf(aroundMineNumber(btn, i)));
+		List<Integer> aroundButtonPosList;
+		if (pos == 0) {
+			// 左上角の場合
+			aroundButtonPosList = List.of(right, bottom, lowerRight);
+		} else if (pos == data[WIDTH] - 1) {
+			// 右上角の場合
+			aroundButtonPosList = List.of(left, lowerLeft, bottom);
+		} else if (pos == (data[HEIGHT] - 1) * data[WIDTH]) {
+			// 左下角の場合
+			aroundButtonPosList = List.of(up, upperRight, right);
+		} else if (pos == data[AREA] - 1) {
+			// 右下角の場合
+			aroundButtonPosList = List.of(up, upperLeft, left);
+		} else if (pos < data[WIDTH] - 1) {
+			// 上辺の場合
+			aroundButtonPosList = List.of(left, right, lowerLeft, bottom, lowerRight);
+		} else if (pos % data[WIDTH] == 0) {
+			// 左辺の場合
+			aroundButtonPosList = List.of(up, upperRight, right, bottom, lowerRight);
+		} else if (pos % data[WIDTH] == data[WIDTH] - 1) {
+			// 右辺の場合
+			aroundButtonPosList = List.of(up, upperLeft, left, bottom, lowerLeft);
+		} else if (pos > (data[HEIGHT] - 1) * data[WIDTH] && pos < data[AREA] - 1) {
+			// 下辺の場合
+			aroundButtonPosList = List.of(up, upperLeft, left, right, upperRight);
+		} else {
+			// 真ん中の場合
+			aroundButtonPosList = List.of(upperLeft, up, upperRight, left, right, lowerLeft, bottom, lowerRight);
 		}
 
-		return btn;
+		aroundPosMap.put(pos, aroundButtonPosList);
+		List<Integer> minePosList = Arrays.stream(minePosArray).boxed().collect(Collectors.toList());
+		long mineCount = aroundButtonPosList.stream()
+				.filter(minePosList::contains)
+				.count();
+
+		return Math.toIntExact(mineCount);
 	}
-
-	/**
-	 * 周辺の地雷数を計算する
-	 * @return 地雷数
-	 */
-	private int aroundMineNumber(JButton[] btn, int i) {
-		int mineNumber = 0;
-		for (Integer pos : aroundPosMap.get(i)) {
-			if (Constants.MINE.equals(btn[pos].getName())) {
-				mineNumber++;
-			}
-		}
-		return mineNumber;
-	}
-
-	/**
-	 * <p>地雷が設置されている箇所を設定する。
-	 * @return 地雷が設置されているか否か
-	 */
-	public JButton[] embedMine() {
-
-		JButton[] btn = new JButton[data[AREA]];
-		int[] mine = Mine();
-
-		for (int button_i = 0; button_i < data[AREA]; button_i++) {
-			btn[button_i] = new JButton();
-			for(int mine_j = 0; mine_j < data[I_MINE] ; mine_j++) {
-				if (button_i == mine[mine_j]) {
-					btn[button_i].setName(Constants.MINE);
-					break;
-				} else {
-					btn[button_i].setName(Constants.NONE);
-				}
-			}
-		}
-
-		return btn;
-	}
-
-	/**
-	 * <p>地雷の設置箇所を決定する</p>
-	 *
-	 * @return 地雷の設置箇所
-	 */
-	private int[] Mine() {
-
-		Random rand = new Random();
-		IntStream minePosStream = rand.ints(0, data[AREA]);
-
-		return minePosStream.distinct().limit(data[I_MINE]).sorted().toArray();
-	}
-
 
 	public void mouseEntered(MouseEvent e) {
 
@@ -240,27 +203,19 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 	public void mouseClicked(MouseEvent e) {
 
 		if(e.getButton() == MouseEvent.BUTTON3) {
-
-			JButton thisBtn = (JButton)e.getSource();
-			int number = Integer.parseInt(thisBtn.getActionCommand());
-			JButton btn = (JButton) frame.getContentPane().getComponent(number);
-
-			if(thisBtn.isEnabled() && !CheckMine.CHECKED.equals(thisBtn.getName())) {
-
+			JButton selectedBtn = (JButton)e.getSource();
+			int number = Integer.parseInt(selectedBtn.getActionCommand());
+			JButton btn = (JButton) p.getComponent(number);
+			if(selectedBtn.isEnabled() && !CheckMine.CHECKED.equals(selectedBtn.getName())) {
 				ImageIcon icon = new ImageIcon("./icon/flag.png");
-
 				btn.setIcon(icon);
 				btn.setEnabled(false);
-
-			} else if (!thisBtn.isEnabled() && thisBtn.getIcon() != null) {
-
+			} else if (!selectedBtn.isEnabled() && Objects.nonNull(selectedBtn.getIcon())) {
 				btn.setEnabled(true);
 				btn.setIcon(null);
-
 			}
 
 			flagCount();
-
 		}
 	}
 

@@ -106,10 +106,10 @@ public class CheckMine extends JFrame implements ActionListener {
 
 		b.setFont(new Font("HGPｺﾞｼｯｸE", Font.BOLD, 20));
 
-		switch (b.getName()) {
-			case ZERO -> b.setText(Constants.NONE);
-			case MINE -> b.setText(Constants.DISPLAY_MINE);
-			default -> b.setText(b.getName());
+		if (MINE.equals(b.getName())) {
+			b.setText(Constants.DISPLAY_MINE);
+		} else {
+			b.setText(b.getName());
 		}
 
 		b.setName(CHECKED);
