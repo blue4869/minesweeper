@@ -1,10 +1,13 @@
-package swing.minesweeper;
+package minesweeper.minesweeper;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import minesweeper.minesweeper.constants.Constants.Kind;
+
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -113,10 +116,12 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 			if (component instanceof JButton btn) {
 				int btn_i = Integer.parseInt(btn.getActionCommand());
 				if (minePos_j < data[I_MINE] && btn_i == minePosArray[minePos_j]) {
-					btn.setName(Constants.MINE);
+					btn.putClientProperty(Constants.KEY_KIND, Kind.MINE);
 					minePos_j++;
 				} else {
-					btn.setName(String.valueOf(setAroundMineNumber(btn_i, minePosArray)));
+					btn.putClientProperty(Constants.KEY_KIND, Kind.NUMBER);
+					btn.putClientProperty(Constants.KEY_COUNT,
+							setAroundMineNumber(btn_i, minePosArray));
 				}
 				btn.removeActionListener(this);
 				btn.addActionListener(new CheckMine(this.frame, this.p, data));

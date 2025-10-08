@@ -1,4 +1,4 @@
-package swing.minesweeper;
+package minesweeper.minesweeper;
 
 import java.util.Arrays;
 import java.util.Map;

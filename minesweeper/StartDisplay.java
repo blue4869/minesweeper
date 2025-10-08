@@ -1,4 +1,4 @@
-package swing.minesweeper;
+package minesweeper.minesweeper;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
