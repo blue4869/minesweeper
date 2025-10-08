@@ -1,9 +1,14 @@
-package swing.minesweeper;
+package minesweeper.minesweeper;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import minesweeper.minesweeper.constants.Constants;
+import minesweeper.minesweeper.constants.Constants.Kind;
+import minesweeper.minesweeper.constants.Constants.State;
+
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -18,14 +23,13 @@ public class CheckMine extends JFrame implements ActionListener {
 	private final JPanel p;
 	private final int[] data;
 
-	/** 地雷 */
-	private static final String MINE = "mine";
-
 	/** 周囲の地雷の数 */
 	public static final String ZERO = "0";
 
 	/** すでに確認したマスかのフラグ */
 	public static final String CHECKED = "checked";
+
+
 
 	public CheckMine (JFrame frame, JPanel p, int[] data) {
 		this.frame = frame;
@@ -41,8 +45,8 @@ public class CheckMine extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 
 		JButton b = (JButton)e.getSource();
-		String name = b.getName();
-		if(MINE.equals(name)) {
+		Kind name = (Kind)b.getClientProperty(Constants.KEY_KIND);
+		if(name == Kind.MINE) {
 			for (Component component : p.getComponents()) {
 				if (component instanceof JButton btn) {
 					String btnName = btn.getName();
@@ -60,12 +64,14 @@ public class CheckMine extends JFrame implements ActionListener {
 					"GAME OVER!!!", JOptionPane.YES_NO_OPTION);
 			selectContinue(frame, res);
 		} else {
-			nameCheck(b, p, data);
+			nameCheck(b, p, data);	
 		}
 
 		int checkedCount = Math.toIntExact(Arrays.stream(p.getComponents())
-				.filter(component -> CHECKED.equals(component.getName()))
-				.count());
+				.filter(component -> {
+					JButton button = (JButton) component;
+					return button.getClientProperty(Constants.KEY_STATE) == State.REVEALED;
+				}).count());
 
 		if (checkedCount == data[GameMake.AREA] - data[GameMake.I_MINE]) {
 			int res = JOptionPane.showInternalConfirmDialog(p,
@@ -106,13 +112,16 @@ public class CheckMine extends JFrame implements ActionListener {
 
 		b.setFont(new Font("HGPｺﾞｼｯｸE", Font.BOLD, 20));
 
-		if (MINE.equals(b.getName())) {
+		Kind kind = (Kind) b.getClientProperty(Constants.KEY_KIND);
+		Integer count = (Integer) b.getClientProperty(Constants.KEY_COUNT);
+
+		if (kind == Kind.MINE) {
 			b.setText(Constants.DISPLAY_MINE);
 		} else {
-			b.setText(b.getName());
+			b.setText(String.valueOf(count));
 		}
 
-		b.setName(CHECKED);
+		b.putClientProperty(Constants.KEY_STATE, State.REVEALED);
 		b.setEnabled(false);
 	}
 
@@ -124,16 +133,15 @@ public class CheckMine extends JFrame implements ActionListener {
 	 * @param data ゲームの各データ
 	 */
 	public static void nameCheck(JButton button, JPanel p, int[] data) {
-		String buttonName = button.getName();
-		if (CHECKED.equals(buttonName)) {
+		State st = (State) button.getClientProperty(Constants.KEY_STATE);
+		if (st == State.REVEALED)
 			return;
-		}
 
-		if (ZERO.equals(buttonName)) {
+		Integer count = (Integer) button.getClientProperty(Constants.KEY_COUNT);
+		if (count != null && count == 0) {
 			openAllZero(button, p, data);
 		} else {
 			setMineText(button);
-			button.setEnabled(false);
 		}
 	}
 }

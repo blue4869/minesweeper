@@ -1,10 +1,15 @@
-package swing.minesweeper;
+package minesweeper.minesweeper;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import minesweeper.minesweeper.constants.ConstLevels;
+import minesweeper.minesweeper.constants.Constants;
+import minesweeper.minesweeper.constants.Constants.Kind;
+
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -113,10 +118,12 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 			if (component instanceof JButton btn) {
 				int btn_i = Integer.parseInt(btn.getActionCommand());
 				if (minePos_j < data[I_MINE] && btn_i == minePosArray[minePos_j]) {
-					btn.setName(Constants.MINE);
+					btn.putClientProperty(Constants.KEY_KIND, Kind.MINE);
 					minePos_j++;
 				} else {
-					btn.setName(String.valueOf(setAroundMineNumber(btn_i, minePosArray)));
+					btn.putClientProperty(Constants.KEY_KIND, Kind.NUMBER);
+					btn.putClientProperty(Constants.KEY_COUNT,
+							setAroundMineNumber(btn_i, minePosArray));
 				}
 				btn.removeActionListener(this);
 				btn.addActionListener(new CheckMine(this.frame, this.p, data));
@@ -206,7 +213,7 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 			JButton selectedBtn = (JButton)e.getSource();
 			int number = Integer.parseInt(selectedBtn.getActionCommand());
 			JButton btn = (JButton) p.getComponent(number);
-			if(selectedBtn.isEnabled() && !CheckMine.CHECKED.equals(selectedBtn.getName())) {
+			if(selectedBtn.isEnabled() && Kind.MINE != (Kind)selectedBtn.getClientProperty(Constants.KEY_KIND)) {
 				ImageIcon icon = new ImageIcon("./icon/flag.png");
 				btn.setIcon(icon);
 				btn.setEnabled(false);
@@ -229,7 +236,8 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 				if (Objects.nonNull(btn.getIcon())) {
 					flagCount++;
 				}
-				if (Constants.MINE.equals(btn.getName()) && Objects.nonNull(btn.getIcon())) {
+				if (Kind.MINE == (Kind) btn.getClientProperty(Constants.KEY_KIND)
+						&& Objects.nonNull(btn.getIcon())) {
 					checkedCount++;
 				}
 			}
