@@ -213,7 +213,7 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 			JButton selectedBtn = (JButton)e.getSource();
 			int number = Integer.parseInt(selectedBtn.getActionCommand());
 			JButton btn = (JButton) p.getComponent(number);
-			if(selectedBtn.isEnabled() && !CheckMine.CHECKED.equals(selectedBtn.getName())) {
+			if(selectedBtn.isEnabled() && Kind.MINE != (Kind)selectedBtn.getClientProperty(Constants.KEY_KIND)) {
 				ImageIcon icon = new ImageIcon("./icon/flag.png");
 				btn.setIcon(icon);
 				btn.setEnabled(false);
@@ -236,7 +236,8 @@ public class GameMake extends JFrame implements ActionListener, MouseListener {
 				if (Objects.nonNull(btn.getIcon())) {
 					flagCount++;
 				}
-				if (Constants.MINE.equals(btn.getName()) && Objects.nonNull(btn.getIcon())) {
+				if (Kind.MINE == (Kind) btn.getClientProperty(Constants.KEY_KIND)
+						&& Objects.nonNull(btn.getIcon())) {
 					checkedCount++;
 				}
 			}

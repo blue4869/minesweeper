@@ -45,8 +45,8 @@ public class CheckMine extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 
 		JButton b = (JButton)e.getSource();
-		String name = b.getName();
-		if(Constants.MINE.equals(name)) {
+		Kind name = (Kind)b.getClientProperty(Constants.KEY_KIND);
+		if(name == Kind.MINE) {
 			for (Component component : p.getComponents()) {
 				if (component instanceof JButton btn) {
 					String btnName = btn.getName();
