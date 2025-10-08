@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import minesweeper.minesweeper.constants.Constants;
 import minesweeper.minesweeper.constants.Constants.Kind;
 import minesweeper.minesweeper.constants.Constants.State;
 

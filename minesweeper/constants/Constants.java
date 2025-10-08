@@ -1,4 +1,4 @@
-package minesweeper.minesweeper;
+package minesweeper.minesweeper.constants;
 
 public class Constants {
     /** 地雷判別用文字列 */
